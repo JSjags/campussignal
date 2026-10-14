@@ -1,5 +1,7 @@
 # Submission handoff
 
+Live demo: [CampusSignal](https://campussignallive.vercel.app). Production demo login and canonical callback origin verified. Real email delivery and sign-in still need a successful inbox test.
+
 ## What to show
 
 CampusSignal helps working university learners restart with one confirmed learning outcome, a 12-minute task, nearby peer support, and a collectible proof stamp. The free rule-based coach uses confirmed objectives and learning preferences; no paid API key is required.

@@ -16,7 +16,7 @@ npm run seed
 npm run dev
 ```
 
-Set SESSION_SECRET to a random string of at least 32 characters. Open [CampusSignal locally](http://localhost:3000). Hosted demo URL: **not deployed yet**.
+Set SESSION_SECRET to a random string of at least 32 characters. Open [CampusSignal locally](http://localhost:3000). Hosted demo: [CampusSignal](https://campussignallive.vercel.app).
 
 ### Demo accounts and 90-second path
 
