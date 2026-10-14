@@ -1,0 +1,12 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "sqlite"
+ url = env("DATABASE_URL")
+}
+model CampusState {
+ id String @id
+ version Int @default(0)
+ data String
+}

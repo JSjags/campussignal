@@ -1,0 +1,30 @@
+name: App checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./ci.db
+      DEMO_LOGIN: '1'
+      SESSION_SECRET: ci-only-test-secret-not-for-deployment-123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm run db:push
+      - run: npm run seed
+      - name: API integration checks
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/campus-server.log 2>&1 &
+          trap 'kill $!' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/auth/config >/dev/null; then break; fi
+            sleep 1
+          done
+          SMOKE_URL=http://127.0.0.1:3000 npm run test:api

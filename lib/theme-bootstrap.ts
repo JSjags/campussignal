@@ -1,0 +1,1 @@
+export const themeBootstrap = `(function(){try{var t=localStorage.getItem('campus-theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}})()`;
