@@ -1,6 +1,19 @@
 "use client";
-import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useId, useRef, useState } from "react";
+import { lockScroll, unlockScroll } from "./smooth-scroll";
+import { usePrefersReducedMotion } from "./reduced-motion";
+export { usePrefersReducedMotion };
+
+/* ---------- Shared transitions ---------- */
+export const ease = [0.2, 0.8, 0.2, 1] as const;
+export const springPress = {
+  type: "spring",
+  stiffness: 520,
+  damping: 34,
+} as const;
+
+/** One short entrance for a whole screen — never per item. */
 export function Reveal({
   children,
   className,
@@ -8,120 +21,207 @@ export function Reveal({
   children: React.ReactNode;
   className?: string;
 }) {
-  const reduced = useReducedMotion();
   return (
     <motion.div
       className={className}
-      initial={reduced ? false : { opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28 }}
+      transition={{ duration: 0.24, ease }}
     >
       {children}
     </motion.div>
   );
 }
-export function SignalLines({ connected = false }: { connected?: boolean }) {
-  const reduced = useReducedMotion();
+
+/** Forward/backward step transition (onboarding). */
+export function StepTransition({
+  stepKey,
+  direction,
+  children,
+}: {
+  stepKey: string | number;
+  direction: 1 | -1;
+  children: React.ReactNode;
+}) {
+  return (
+    <AnimatePresence mode="wait" initial={false} custom={direction}>
+      <motion.div
+        key={stepKey}
+        custom={direction}
+        variants={{
+          enter: (d: number) => ({ opacity: 0, x: d * 28 }),
+          center: { opacity: 1, x: 0 },
+          exit: (d: number) => ({ opacity: 0, x: d * -28 }),
+        }}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.2, ease }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+const short = (v: string) => (v.length <= 3 ? v : v.slice(0, 1)).toUpperCase();
+
+/* ---------- Connection illustration (peer-help story) ---------- */
+export function ConnectionGraphic({
+  connected = false,
+  label = "You",
+  peerLabel = "+1",
+}: {
+  connected?: boolean;
+  label?: string;
+  peerLabel?: string;
+}) {
+  const reduced = usePrefersReducedMotion();
+  const still = reduced !== false;
   return (
     <svg
-      className="signal-lines"
-      viewBox="0 0 480 280"
+      className={`connection-graphic ${connected ? "is-connected" : ""}`}
+      viewBox="0 0 320 180"
       fill="none"
       aria-hidden="true"
     >
-      <path className="signal-guide" d="M0 140H480M240 0V280" />
-      <circle className="signal-guide" cx="240" cy="140" r="105" />
-      <circle className="signal-guide" cx="240" cy="140" r="70" />
-      <motion.path
-        className="signal-path"
-        d="M0 223C110 223 100 60 220 60S353 219 480 100"
-        initial={reduced ? false : { pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: reduced ? 0 : 1.1, ease: "easeInOut" }}
+      <rect
+        className="cg-radius"
+        x="14"
+        y="14"
+        width="292"
+        height="152"
+        rx="22"
       />
-      <motion.path
-        className="signal-path secondary"
-        d="M0 86C110 86 140 222 269 222S398 56 480 56"
-        initial={reduced ? false : { pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: reduced ? 0 : 1.3, ease: "easeInOut" }}
-      />
-      <circle cx="144" cy="103" r="5" className="signal-node" />
-      <circle cx="345" cy="178" r="5" className="signal-node" />
-      {connected && (
-        <motion.path
-          className="signal-path connection-path"
-          d="M144 103L345 178"
-          initial={reduced ? false : { pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.4 }}
-        />
-      )}
       <path
-        className="signal-tick"
-        d="M10 10v12M4 16h12M470 258v12M464 264h12"
+        className="cg-route"
+        d="M76 112 C 120 40, 196 150, 244 70"
+        strokeDasharray="2 10"
       />
+      <motion.path
+        className="cg-link"
+        d="M76 112 C 120 40, 196 150, 244 70"
+        initial={still ? false : { pathLength: 0 }}
+        animate={{ pathLength: connected ? 1 : 0.42 }}
+        transition={{ duration: still ? 0 : 0.7, ease, delay: still ? 0 : 0.1 }}
+      />
+      <g className="cg-node cg-you">
+        <circle cx="76" cy="112" r="24" />
+        <text x="76" y="117" textAnchor="middle">
+          {short(label)}
+        </text>
+      </g>
+      <g className="cg-node cg-peer">
+        <circle cx="244" cy="70" r="24" />
+        <text x="244" y="75" textAnchor="middle">
+          {short(peerLabel)}
+        </text>
+      </g>
+      {connected && (
+        <motion.g
+          className="cg-check"
+          initial={still ? false : { opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ ...springPress, delay: still ? 0 : 0.55 }}
+          style={{ transformOrigin: "160px 98px" }}
+        >
+          <circle cx="160" cy="98" r="16" />
+          <path d="M152 98l6 6 11-12" />
+        </motion.g>
+      )}
     </svg>
   );
 }
-export function LandingScroll({ children }: { children: React.ReactNode }) {
-  const reduced = useReducedMotion();
-  useEffect(() => {
-    if (reduced !== false) return;
-    let disposed = false;
-    let instance: { destroy: () => void } | undefined;
-    import("lenis").then(({ default: Lenis }) => {
-      if (!disposed)
-        instance = new Lenis({
-          autoRaf: true,
-          anchors: true,
-          smoothWheel: true,
-          syncTouch: false,
-          duration: 0.85,
-        });
-    });
-    return () => {
-      disposed = true;
-      instance?.destroy();
-    };
-  }, [reduced]);
-  return <>{children}</>;
+
+/* ---------- Stamps land once, only when newly earned ---------- */
+const SEEN_KEY = "campus-seen-stamps";
+const FRESH_WINDOW_MS = 30 * 60 * 1000;
+function readSeen(): string[] {
+  try {
+    const raw = localStorage.getItem(SEEN_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list.filter((v) => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
 }
-export function StampReveal({ children }: { children: React.ReactNode }) {
-  const reduced = useReducedMotion();
+function markSeen(key: string) {
+  try {
+    const list = readSeen().filter((k) => k !== key);
+    list.push(key);
+    localStorage.setItem(SEEN_KEY, JSON.stringify(list.slice(-200)));
+  } catch {}
+}
+/**
+ * `force` animates regardless (a stamp earned in this view).
+ * Otherwise a stamp lands only if it was created recently and this
+ * browser has not shown it yet — ordinary revisits stay still.
+ */
+export function StampLand({
+  stampKey,
+  createdAt,
+  force = false,
+  children,
+}: {
+  stampKey: string;
+  createdAt?: string;
+  force?: boolean;
+  children: React.ReactNode;
+}) {
+  const [fresh] = useState(() => {
+    if (force) return true;
+    if (typeof window === "undefined" || !createdAt) return false;
+    const age = Date.now() - new Date(createdAt).getTime();
+    return age >= 0 && age < FRESH_WINDOW_MS && !readSeen().includes(stampKey);
+  });
+  useEffect(() => {
+    markSeen(stampKey);
+  }, [stampKey]);
   return (
     <motion.div
-      initial={reduced ? false : { opacity: 0, scale: 1.12, rotate: -4 }}
+      className="stamp-land"
+      initial={fresh ? { opacity: 0, scale: 1.3, rotate: -8 } : false}
       animate={{ opacity: 1, scale: 1, rotate: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      transition={{ type: "spring", stiffness: 420, damping: 22, mass: 0.8 }}
     >
       {children}
     </motion.div>
   );
 }
-export function RequestDialog({
+
+/* ---------- Accessible modal dialog ---------- */
+export function Dialog({
   children,
   onClose,
+  labelledBy,
 }: {
   children: React.ReactNode;
   onClose: () => void;
+  labelledBy: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const node = dialog.current;
+    const opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     node?.showModal();
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockScroll();
     return () => {
       node?.close();
-      document.body.style.overflow = previous;
+      unlockScroll();
+      // Native dialogs restore focus on close; keep it explicit for unmount.
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
     };
   }, []);
   return (
     <dialog
       ref={dialog}
-      className="request-dialog"
-      aria-labelledby="request-title"
+      className="dialog"
+      aria-labelledby={labelledBy}
+      aria-modal="true"
+      data-lenis-prevent
       onCancel={(e) => {
         e.preventDefault();
         onClose();
@@ -130,7 +230,19 @@ export function RequestDialog({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <Reveal className="modal">{children}</Reveal>
+      <motion.div
+        className="dialog-panel"
+        initial={{ opacity: 0, y: 14, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.2, ease }}
+      >
+        {children}
+      </motion.div>
     </dialog>
   );
+}
+
+/** Stable id helper for labelling dialogs and regions. */
+export function useLabelId(prefix: string) {
+  return `${prefix}-${useId().replace(/:/g, "")}`;
 }

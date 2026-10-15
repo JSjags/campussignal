@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CampusSignal identity preview</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#fbf6ea; --surface:#fffdf7; --sunken:#f3ecdb; --ink:#17140f; --ink2:#4f483c; --divider:#d8cfbb;
+          --accent:#ffd23f; --cobalt:#2347d6; --mint:#7fe0b8; --coral:#ff6f4f; --dark:#15130f; --dark-surface:#211d17; --cream:#f6efdf; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:1180px; margin:0 auto; padding:40px 20px 80px; display:grid; gap:56px; }
+  h1 { font-size:clamp(30px,5vw,52px); line-height:1.02; letter-spacing:-.035em; margin:0 0 10px; }
+  h2 { font-size:clamp(22px,3vw,30px); letter-spacing:-.02em; margin:0 0 6px; }
+  h3 { font-size:16px; margin:0; }
+  p { color:var(--ink2); margin:0; max-width:72ch; }
+  .label { font:700 12px/1.2 ui-monospace, "Geist Mono", monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--ink2); }
+  section { display:grid; gap:18px; }
+  .grid { display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .panel { border:2px solid var(--ink); border-radius:20px; padding:24px; background:var(--surface); display:grid; gap:12px; align-content:start; min-width:0; }
+  .panel.dark { background:var(--dark); border-color:var(--dark); color:var(--cream); }
+  .panel.dark .label, .panel.dark p { color:#cbc1ad; }
+  .panel.accent { background:var(--accent); }
+  .stage { display:grid; place-items:center; min-height:180px; }
+  .shadow { box-shadow:5px 5px 0 var(--ink); }
+  figure { margin:0; display:grid; gap:8px; }
+  figure img.shot { width:100%; height:auto; border:2px solid var(--ink); border-radius:16px; display:block; }
+  figcaption { font-size:14px; color:var(--ink2); }
+  .row { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-end; }
+  .size { display:grid; justify-items:center; gap:6px; font:600 12px ui-monospace, monospace; color:var(--ink2); }
+  .pix { image-rendering:pixelated; }
+  .stage img, .panel > img { max-width:100%; object-fit:contain; }
+  .panel.dark .size { color:#cbc1ad; }
+  .btn { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:10px 18px; border:2px solid var(--ink); border-radius:12px; font-weight:700; background:var(--accent); box-shadow:3px 3px 0 var(--ink); }
+  .btn.plain { background:var(--surface); }
+  .badge { display:inline-flex; align-items:center; min-height:28px; padding:3px 11px; border:2px solid var(--ink); border-radius:999px; font:700 12px ui-monospace, monospace; background:var(--mint); }
+  .stamp { width:110px; aspect-ratio:1; border-radius:50%; border:3px solid var(--ink); background:var(--cobalt); color:#fff; display:grid; place-items:center; text-align:center; font:900 14px system-ui; box-shadow:5px 5px 0 var(--ink); position:relative; }
+  .stamp::before { content:""; position:absolute; inset:8px; border:2px dashed currentColor; border-radius:50%; opacity:.7; }
+  .clear { position:relative; display:inline-block; padding:24px; background:repeating-linear-gradient(45deg, #ffd23f33 0 6px, transparent 6px 12px); border:2px dashed var(--ink2); border-radius:12px; }
+  .dont { position:relative; }
+  .dont::after { content:"Don't"; position:absolute; top:12px; right:12px; font:800 11px ui-monospace, monospace; background:var(--coral); border:2px solid var(--ink); border-radius:999px; padding:2px 9px; }
+  .swatch { display:grid; gap:6px; }
+  .swatch i { display:block; height:64px; border:2px solid var(--ink); border-radius:12px; }
+  code { font:13px ui-monospace, monospace; background:var(--sunken); padding:1px 5px; border-radius:6px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="label">CampusSignal identity · preview sheet</span>
+    <h1>The Opening</h1>
+    <p>Two learners, drawn as rounded L-blocks, leave a stepped channel between them. The opening runs up and to the right, where a signal dot marks the next step. The wordmark carries the same dot over its <em>i</em> and a short forward step on its final <em>l</em>. See <a href="concepts/index.html">the three concepts</a> and <code>docs/BRAND.md</code> for usage rules.</p>
+  </header>
+
+  <section>
+    <div class="grid">
+      <div class="panel shadow"><span class="label">Primary · light</span><div class="stage"><img src="lockup-horizontal.svg" alt="CampusSignal" height="72"></div></div>
+      <div class="panel dark"><span class="label">Reversed · dark</span><div class="stage"><img src="lockup-horizontal-reversed.svg" alt="CampusSignal" height="72"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>In the actual navigation</h2>
+    <p>Captured from a production build of the app at 2× in both themes. Below 420px the header switches to the compact tile.</p>
+    <div class="grid">
+      <figure><img class="shot" src="preview/desktop-nav-light.png" alt="Desktop sidebar, light theme"><figcaption>Desktop sidebar · light</figcaption></figure>
+      <figure><img class="shot" src="preview/desktop-nav-dark.png" alt="Desktop sidebar, dark theme"><figcaption>Desktop sidebar · dark</figcaption></figure>
+      <figure><img class="shot" src="preview/mobile-header-light.png" alt="Mobile header, light theme"><figcaption>Mobile header (compact) · light</figcaption></figure>
+      <figure><img class="shot" src="preview/mobile-header-dark.png" alt="Mobile header, dark theme"><figcaption>Mobile header (compact) · dark</figcaption></figure>
+      <figure><img class="shot" src="preview/landing-header-light.png" alt="Landing header, light theme"><figcaption>Landing · light</figcaption></figure>
+      <figure><img class="shot" src="preview/landing-header-dark.png" alt="Landing header, dark theme"><figcaption>Landing · dark</figcaption></figure>
+      <figure><img class="shot" src="preview/login-light.png" alt="Login page header, light theme"><figcaption>Login · light</figcaption></figure>
+      <figure><img class="shot" src="preview/login-dark.png" alt="Login page header, dark theme"><figcaption>Login · dark</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Approved lockups</h2>
+    <div class="grid">
+      <div class="panel"><span class="label">Horizontal</span><div class="stage"><img src="lockup-horizontal.svg" alt="" height="48"></div></div>
+      <div class="panel"><span class="label">Stacked</span><div class="stage"><img src="lockup-stacked.svg" alt="" height="150"></div></div>
+      <div class="panel"><span class="label">Compact tile</span><div class="stage"><img src="symbol-tile.svg" alt="" height="96"></div></div>
+      <div class="panel"><span class="label">Symbol</span><div class="stage"><img src="symbol.svg" alt="" height="96"></div></div>
+      <div class="panel"><span class="label">Monochrome</span><div class="stage" style="gap:16px"><img src="lockup-horizontal-mono.svg" alt="" height="40"><img src="wordmark-mono.svg" alt="" height="26"></div></div>
+      <div class="panel dark"><span class="label">Reversed</span><div class="stage" style="gap:16px"><img src="lockup-stacked-reversed.svg" alt="" height="130"><img src="symbol-reversed.svg" alt="" height="56"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Favicon and app icons at real pixel sizes</h2>
+    <p>Below 32px the favicon uses a simplified, pixel-snapped mark on a 16-unit grid rather than shrinking the lockup. The magnified PNGs show the actual exported pixels.</p>
+    <div class="grid">
+      <div class="panel"><span class="label">On a light tab</span><div class="row">
+        <div class="size"><img src="favicon.svg" width="16" height="16" alt="">16</div>
+        <div class="size"><img src="favicon.svg" width="24" height="24" alt="">24</div>
+        <div class="size"><img src="icon-32.png" width="32" height="32" alt="">32 PNG</div>
+        <div class="size"><img src="favicon.svg" width="48" height="48" alt="">48</div>
+        <div class="size"><img class="pix" src="icon-32.png" width="128" height="128" alt="">32px ×4</div>
+      </div></div>
+      <div class="panel dark"><span class="label">On a dark tab</span><div class="row">
+        <div class="size"><img src="favicon.svg" width="16" height="16" alt="">16</div>
+        <div class="size"><img src="favicon.svg" width="24" height="24" alt="">24</div>
+        <div class="size"><img src="icon-32.png" width="32" height="32" alt="">32 PNG</div>
+        <div class="size"><img src="../favicon.ico" width="16" height="16" alt="">.ico</div>
+      </div></div>
+      <div class="panel"><span class="label">Home screen and app icons</span><div class="row">
+        <div class="size"><img src="apple-touch-icon.png" width="90" height="90" alt="" style="border-radius:20px">180 Apple</div>
+        <div class="size"><img src="icon-192.png" width="96" height="96" alt="">192</div>
+        <div class="size"><img src="icon-512.png" width="128" height="128" alt="">512</div>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Alongside the product components</h2>
+    <div class="grid">
+      <div class="panel shadow"><img src="lockup-horizontal.svg" alt="" height="36" style="justify-self:start">
+        <h3>A 12-minute restart. One real step.</h3><p>The logo shares the tile radius, 2–3px outlines and solid offsets of the app's cards and buttons.</p>
+        <div class="row"><span class="btn">Start my restart →</span><span class="btn plain">Find a friend</span><span class="badge">Open to help</span></div></div>
+      <div class="panel accent"><span class="label" style="color:var(--ink)">Presentation title slide</span><img src="lockup-stacked.svg" alt="" height="130" style="justify-self:start"><h3>Your next small win.</h3></div>
+      <div class="panel"><span class="label">Stamp + symbol</span><div class="row" style="align-items:center"><div class="stamp">UNSTUCK</div><img src="symbol.svg" alt="" height="64"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Clear space and minimum size</h2>
+    <div class="grid">
+      <div class="panel"><span class="label">Clear space = ¼ of the tile height on every side</span><div class="stage"><span class="clear"><img src="lockup-horizontal.svg" alt="" height="48" style="display:block"></span></div></div>
+      <div class="panel"><span class="label">Minimum sizes</span><div class="row" style="align-items:center">
+        <div class="size"><img src="lockup-horizontal.svg" alt="" height="24">Lockup 24px tall</div>
+        <div class="size"><img src="symbol-tile.svg" alt="" height="20">Tile 20px</div>
+        <div class="size"><img src="favicon.svg" alt="" height="16">Favicon 16px</div></div>
+        <p>Below 24px, use the compact tile or favicon rather than the full lockup.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Incorrect usage</h2>
+    <div class="grid">
+      <div class="panel dont"><div class="stage"><img src="lockup-horizontal.svg" alt="" height="40" style="transform:rotate(-8deg)"></div><p>Don't rotate or tilt the logo.</p></div>
+      <div class="panel dont"><div class="stage"><img src="lockup-horizontal.svg" alt="" height="40" style="width:230px;height:40px;object-fit:fill"></div><p>Don't stretch or squash it. Keep the aspect ratio.</p></div>
+      <div class="panel dont"><div class="stage"><img src="symbol-tile.svg" alt="" height="80" style="filter:hue-rotate(160deg)"></div><p>Don't recolour the tile outside the palette.</p></div>
+      <div class="panel dont"><div class="stage"><img src="lockup-horizontal.svg" alt="" height="40" style="filter:drop-shadow(6px 8px 10px #0006)"></div><p>Don't add blurred shadows, gradients or glows.</p></div>
+      <div class="panel dont" style="background:var(--accent)"><div class="stage"><img src="symbol.svg" alt="" height="80" style="opacity:.25"></div><p>Don't place a low-contrast mark on yellow. Use the ink mark at full opacity.</p></div>
+      <div class="panel dont"><div class="stage"><span style="font:800 26px system-ui;display:flex;gap:10px;align-items:center"><img src="symbol-tile.svg" alt="" height="36">Campus Signal</span></div><p>Don't retype the name in a font. Use the supplied wordmark artwork.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Colour</h2>
+    <div class="grid">
+      <div class="swatch"><i style="background:#ffd23f"></i><strong>Signal yellow</strong><code>#ffd23f · dark #ffd84d</code></div>
+      <div class="swatch"><i style="background:#17140f"></i><strong>Ink</strong><code>#17140f</code></div>
+      <div class="swatch"><i style="background:#fbf6ea"></i><strong>Paper</strong><code>#fbf6ea · cream #f6efdf</code></div>
+      <div class="swatch"><i style="background:#2347d6"></i><strong>Cobalt (i-dot)</strong><code>#2347d6 · dark uses yellow</code></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

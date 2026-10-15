@@ -1,127 +1,156 @@
 # CampusSignal
 
-**A little momentum. A nearby friend. A way forward.** CampusSignal helps working open-university learners find their next small win after stalling mid-module. Built MIVA-first, with one Next.js App Router + TypeScript + Tailwind application for UI and API.
+**A little momentum. A nearby friend. A way forward.**
 
-Working learners do not always need another course or another chatbot. Sometimes they need a manageable restart, someone close by who understands the problem, and proof that their effort counts.
+CampusSignal helps working open-university learners turn a stalled module into a manageable next step. Built MIVA-first, it combines 12-minute learning tasks, nearby peer support, and collectible Proof Stamps.
+
+[Live demo](https://campussignallive.vercel.app) · [Demo materials](demo-kit/README.md) · [Built with Codex](docs/BUILD_WITH_CODEX.md) · [Local setup](#try-it-locally)
+
+## Why CampusSignal
+
+Amaka works while studying Computer Science. She has been away from her REST and authentication module for six days, and catching up feels overwhelming. CampusSignal helps her choose one confirmed learning outcome, attempt a small task, and record what happened. If she gets stuck, she can ask a nearby learner for help.
+
+The journey connects learning intent to action: **confirm an outcome → take a small step → get support → record progress.**
+
+## Features
+
+- **12-minute restarts:** a focused task with a rubric shown before submission and an optional timer.
+- **Confirmed learning outcomes:** paste a module outline or import a text-based PDF, then review and confirm the outcomes before creating a task.
+- **Phone a Friend:** find helpers by topic and programme, send a request, and chat after acceptance. Both learners complete independently before earning UNSTUCK stamps.
+- **Nearby community:** opted-in peers and study-desk or buddy pins within approximately 1.6 km, using approximate locations.
+- **In-app coach:** restart plans, reflection prompts, “stuck” support, and `DONE` evidence submissions in a WhatsApp-style conversation.
+- **Proof Stamps:** a persistent collection of completed restarts and shared breakthroughs.
+- **Personal learning preferences:** guided onboarding, study rhythm, self-reported strengths, and light/dark/system appearance.
+
+The core experience uses **rule-based AI (no paid keys)**. Optional OpenAI help notes and the Twilio sandbox are separate integrations.
+
+## Try the demo
+
+Open [CampusSignal](https://campussignallive.vercel.app) and choose a learner on the login screen.
+
+| Persona           | Role                                                            |
+| ----------------- | --------------------------------------------------------------- |
+| **Amaka Okafor**  | Stalled for six days on “REST, Auth & Testing a Node endpoint”. |
+| **Tunde Adeyemi** | Nearby helper, approximately 0.4 mi away.                       |
+| **Chioma Eze**    | Helper and study-desk host, approximately 0.6 mi away.          |
+
+### Demo accounts and 90-second path
+
+1. Sign in as **Amaka**, open Coach, and send **stuck**.
+2. Open **Phone a Friend** and request Tunde’s help with a REST authentication problem.
+3. Use **Switch persona** to become **Tunde**. Open Phone a Friend, accept the request, exchange a message, and mark your side complete.
+4. Switch back to **Amaka**, open the session, and mark her side complete.
+5. Open **My stamps**. Both learners have earned **UNSTUCK**.
+
+For a shorter restart journey, open Amaka’s restart task, read the rubric, and submit:
+
+> I built a REST endpoint and the test returned a 200 response with the expected JSON.
+
+Evidence meeting all three rubric checks earns **The comeback** stamp. The timer does not gate submission.
+
+The [demo kit](demo-kit/README.md) includes a module-outline PDF, printable walkthrough, and copy-and-paste content. Demo personas share persistent state; use demonstration content only. Separate browser profiles can show both learners at once; ordinary tabs share the same login.
+
+## Built with Codex
+
+CampusSignal is developed with Codex assistance, guided by the [product brief](CODEX_PROMPT.md), [repository instructions](AGENTS.md), and project design skills. Codex has been used in this repository for code inspection, cleanup, documentation, and validation.
+
+The [Codex build record](docs/BUILD_WITH_CODEX.md) documents observed work, links implementation and tests, and distinguishes available evidence from earlier work whose authorship is not established by this conversation.
+
+Codex assists development; the application runs its default learning workflows through deterministic rules without an OpenAI API key.
+
+## Architecture
+
+One Next.js App Router application serves both the interface and API.
+
+```mermaid
+flowchart TD
+  Learner[Learner] --> UI[Next.js + React + Tailwind]
+  UI --> API[Route Handlers + Zod + authorization]
+  API --> Auth[Signed demo sessions / Supabase Auth]
+  API --> Domain[Outcomes / restarts / peer help / stamps]
+  Domain --> Providers[FreeRuleProvider + InAppCoach]
+  Providers -. optional .-> External[OpenAI / Twilio sandbox]
+  Domain --> Store[Versioned domain store]
+  Store --> Local[Prisma + SQLite locally]
+  Store --> Hosted[Supabase Postgres on Vercel]
+  UI --> Map[Leaflet + OpenStreetMap]
+```
+
+Local and hosted storage persist the same typed domain collections in a private versioned aggregate. Writes use optimistic concurrency. API routes enforce ownership, consent, and help-session participation. This storage model supports a small pilot; larger deployments will need normalized, indexed tables.
 
 ## Try it locally
 
-Requires Node.js 22+ and npm. No paid key is needed.
+Requires **Node.js 22+** and npm.
 
 ```sh
 cp .env.example .env
+```
+
+Generate a secret with `openssl rand -hex 32` and set it as `SESSION_SECRET` in `.env`. Keep `DEMO_LOGIN="1"` and leave Supabase, OpenAI, and Twilio variables empty for the local demo.
+
+```sh
 npm install
 npm run db:push
 npm run seed
 npm run dev
 ```
 
-Set SESSION_SECRET to a random string of at least 32 characters. Open [CampusSignal locally](http://localhost:3000). Hosted demo: [CampusSignal](https://campussignallive.vercel.app).
+Open [localhost:3000](http://localhost:3000) and choose Amaka. The example configuration stores data in `prisma/dev.db`.
 
-### Demo accounts and 90-second path
+**Reset:** `npm run seed` replaces all data in the configured store. Use it only with a disposable demo database. A locally run seed script can affect hosted data when Supabase variables are configured.
 
-`DEMO_LOGIN=1` exposes three shared personas, without an email address:
+### Configuration and deployment
 
-- **Amaka Okafor** — stalled for six days on “REST, Auth & Testing a Node endpoint”.
-- **Tunde Adeyemi** — nearby helper, approximately 0.4 mi away.
-- **Chioma Eze** — helper and study-desk host, approximately 0.6 mi away.
+| Variable                                                    | Purpose                                                                                    |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`                                              | Local SQLite connection; defaults to `file:./dev.db`.                                      |
+| `DEMO_LOGIN`                                                | `1` enables shared personas; `0` disables them for private deployments.                    |
+| `SESSION_SECRET`                                            | Random secret of at least 32 characters for demo sessions.                                 |
+| `NEXT_PUBLIC_APP_URL`                                       | Application origin for authentication callbacks and webhook validation.                    |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project URL and public key for real email authentication.                         |
+| `SUPABASE_SERVICE_ROLE_KEY`                                 | Server-only key for hosted persistence. Never expose it through a `NEXT_PUBLIC_` variable. |
 
-Sign in as Amaka → see the stalled home → open Coach → send “stuck” → Phone a Friend → ask Tunde for help → switch persona to Tunde → Phone a Friend → accept the request → chat → mark complete → switch back to Amaka → mark complete → open My stamps to see UNSTUCK. The app never completes someone else’s side of a session.
+CLI scripts load `.env` or exported variables; they do not automatically load `.env.local`.
 
-Alternate: Amaka → Let’s restart → read the rubric → submit “I built a REST endpoint and the test returned a 200 response with the expected JSON.” → collect The comeback stamp. The timer is optional; it never gates submission.
+For **Vercel + Supabase**, apply [the hosted schema](supabase/schema.sql), configure all three Supabase variables, and initialize an empty demo store with the seed script. Set the deployed origin in `NEXT_PUBLIC_APP_URL` and allow its `/auth/callback` URL in Supabase Auth. Configure email delivery before offering real signups. Keep `DATABASE_URL=file:./dev.db` for Prisma generation; hosted runtime persistence uses Supabase. SQLite is local only.
 
-For a fresh module: paste an outline → review/edit extracted source lines → explicitly confirm outcomes → receive a task based on the first confirmed outcome. No task is generated from unconfirmed outcomes.
+See the [deployment checklist](docs/SUBMISSION.md#deploy-today) for the full sequence.
 
-## Tracks → features
+### Optional integrations
 
-| Track                  | Feature                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| Learner success        | Stall detection, 12-minute restarts, rubric before submission, Proof Stamps    |
-| Community              | Leaflet/OpenStreetMap, opted-in peers and desk/buddy pins, Phone a Friend      |
-| Accessible AI          | Rule-based AI (no paid keys), optional OpenAI topic hints                      |
-| Trust                  | Approximate location, reciprocal opt-ins, ownership checks, block/report tools |
-| Conversational support | Persistent in-app WhatsApp-style coach; Twilio sandbox optional                |
+- **OpenAI:** `OPENAI_API_KEY` and optional `OPENAI_MODEL` enable help-note enrichment with rule-based fallback. Outcome extraction, task creation, and scoring remain deterministic.
+- **Twilio sandbox optional:** configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_WHATSAPP_FROM`. The `/api/whatsapp/twilio` webhook verifies signatures and acknowledges messages. Account linking and full WhatsApp task conversations are not implemented; the in-app coach provides the complete default flow.
 
-## Screenshots
+## Validation
 
-Screenshot placeholders for a deployed judging submission:
-
-- `docs/screenshots/home.png` — Amaka’s stalled dashboard.
-- `docs/screenshots/nearby.png` — approximate map and nearby helpers.
-- `docs/screenshots/help.png` — accepted help session and bilateral completion.
-- `docs/screenshots/stamps.png` — earned restart and UNSTUCK stamps.
-
-## Architecture
-
-```mermaid
-flowchart TD
-  Learner[Mobile or desktop learner] --> UI[Next.js App Router + Tailwind]
-  UI --> API[Zod-validated Route Handlers]
-  API --> Auth[Signed demo session / Supabase Auth PKCE]
-  API --> Domain[Outcomes / restarts / bilateral help / stamps]
-  Domain --> Providers[AIProvider + WhatsAppProvider]
-  Providers --> Rules[FreeRuleProvider / InAppCoach defaults]
-  Providers -. optional .-> External[OpenAI / Twilio sandbox]
-  Domain --> Store[Versioned compare-and-swap store]
-  Store --> Local[Prisma + SQLite locally]
-  Store --> Hosted[Supabase Postgres JSONB on Vercel]
-  UI --> Map[Leaflet + OpenStreetMap tiles]
+```sh
+npm test
+npm run typecheck
+npm run format:check
+npm run build
 ```
 
-The domain entities are User, ModuleOutline, Outcome, StallState, RestartTask, Submission, ProofStamp, MapPin, HelpRequest, HelpSessionMessage, and CoachMessageLog. Types are in `lib/domain.ts`; the MVP stores these as collections in one private versioned aggregate. This is a deliberate small-pilot design, not a normalized relational schema. Hosted writes use optimistic concurrency; every API request authorizes access before returning records. Normalized tables are the next scaling step.
+Tests cover consent and privacy, learning preferences, helper matching, scoring, bilateral completion, duplicate-stamp prevention, authentication callback handling, and client-cache behavior.
 
-## Free-tier setup and deployment
+For API integration checks, start a seeded, disposable local server with Supabase variables empty, then run `npm run test:api`. This changes demo data, including help sessions and blocks. Use `npm start` to serve a production build, and `npm run format` to apply formatting.
 
-**Local:** Prisma + SQLite, signed demo cookies, deterministic AI. `npm run db:push` initializes the database. `npm run seed` resets the configured store to the three personas.
+## Privacy and scope
 
-**Vercel + Supabase:** create a free Supabase project, run `supabase/schema.sql` in its SQL editor, then set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Keep the service key server-side. Run the seed script against this configuration once for a demo. Deploy this repository as a Next.js app on Vercel with the same environment variables, a strong SESSION_SECRET, and NEXT_PUBLIC_APP_URL set to the deployed origin. Set DATABASE_URL to `file:./dev.db` for Prisma generation; hosted runtime uses Supabase, never ephemeral SQLite. Local disk persistence is deliberately rejected on Vercel if Supabase is missing.
+Discovery and helping are opt-in. Coordinates are rounded to approximately 100 m; the app does not request GPS. Blocking restricts discovery and session access. New real accounts begin with discovery and helping disabled.
 
-In Supabase Auth, enable email signup, set the Site URL, and allow `https://YOUR-DOMAIN/auth/callback` (plus localhost for development). Magic-link signup uses PKCE. New users have discovery and helper opt-ins off and should set their profile area before opting in. Supabase’s included email delivery has restrictions and quotas; broader public signup may require a supported custom SMTP service. Check your project’s Auth email settings before sharing a signup link.
+Proof Stamps record engagement, not academic correctness or accredited competence. Stall signals reflect activity recorded in CampusSignal. Phone a Friend is an in-app peer conversation.
 
-PDF module import extracts text locally in the browser (5 MB / 40 pages, up to 15,000 characters). Learners review text and explicitly confirm outcomes. Scanned PDFs need pasted text; OCR is not included. No PDF files are uploaded. Evidence supports written notes and optional HTTPS photo URLs. Supabase Storage is a planned extension for authenticated uploads, not required to use the app.
+PDF extraction runs in the browser, supports selectable text up to 5 MB / 40 pages, and imports up to 15,000 characters. Files are not uploaded. Scanned PDFs require pasted text. Evidence photos are optional HTTPS references; image analysis is not included.
 
-### Optional providers
-
-- **OpenAI:** set OPENAI_API_KEY and optionally OPENAI_MODEL. Only help-topic hints use OpenAI; extraction, task creation, and scoring remain deterministic. Failed external hints fall back to FreeRuleProvider. OpenAI usage may incur charges; leave the key empty for the free path.
-- **Twilio sandbox optional:** set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM, and NEXT_PUBLIC_APP_URL. Point the sandbox incoming webhook at `/api/whatsapp/twilio`. It verifies the Twilio signature and returns a TwiML acknowledgement directing users to the in-app coach. Phone-to-account linking and full inbound WhatsApp task events are out of scope for this stub. The TwilioWhatsAppSandbox provider includes outbound send support for a future linked-account integration. The in-app coach is the complete default conversation flow.
-
-| Constraint                | Implementation / limit                                                             |
-| ------------------------- | ---------------------------------------------------------------------------------- |
-| No paid services required | Local demo and rule-based AI need no external keys                                 |
-| Vercel free deployment    | Supabase persistent store; never SQLite on ephemeral serverless disk               |
-| Privacy                   | Opt-in discovery/help, ~100 m coordinate rounding, no exact GPS                    |
-| Honest outcomes           | Extracted from pasted text; learner confirms edits before task creation            |
-| Honest stamps             | Evidence checks, not accredited proof of competence; repeated calls are idempotent |
-| Human help                | Recipient accepts; both participants complete independently                        |
-| Shared demos              | Public persona data; disable demo login for private use                            |
-| Small pilot               | Single versioned aggregate; no distributed rate limiting or staffed moderation     |
-| Maps                      | Free OSM tiles need network access; visible peer list remains available            |
-
-## Scripts
-
-| Command                       | Purpose                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| `npm run dev`                 | Start development server                                                |
-| `npm run db:push`             | Initialize local SQLite schema                                          |
-| `npm run seed`                | Replace configured data with demonstration personas — destructive reset |
-| `npm test`                    | Domain privacy, scoring, lifecycle, idempotency tests                   |
-| `npm run typecheck`           | TypeScript validation                                                   |
-| `npm run build` / `npm start` | Production build / server                                               |
+The MVP does not include LMS scraping, payments, a job board, background notifications, self-service account export/deletion, or staffed moderation. Reports are recorded for operator review. See [privacy and data handling](docs/PRIVACY.md).
 
 ## Documentation
 
-[Product](docs/PRODUCT.md) · [Judge brief](docs/JUDGES.md) · [API examples](docs/API.md) · [Privacy](docs/PRIVACY.md) · [Contributing](CONTRIBUTING.md) · [Agent rules](AGENTS.md)
-
-Framework references used during implementation: [Next.js App Router](https://nextjs.org/docs/app) and [Supabase PKCE code exchange](https://supabase.com/docs/reference/javascript/auth-exchangecodeforsession).
-
-## Out of scope
-
-No LMS or paywall scraping, job board, grades, payments, automatic academic correctness assessment, exact GPS, live video calling, production WhatsApp account linking, automatic image analysis, background notifications, or staffed report escalation. Phone a Friend is an in-app peer-help conversation, not a telephone call.
-
-## Design system
-
-Self-hosted Archivo, Inter, Geist Mono, and Instrument Serif typography; persistent light/dark/system themes; restrained Motion animations and landing-only Lenis scrolling. Phone a Friend introduces the editorial, ruled layout. See [docs/DESIGN.md](docs/DESIGN.md) and the project design/Motion skills in `.agents/skills`.
-
-## Account setup and personalized learning
-
-New real accounts begin with four-step onboarding for studies, modules, goals, study preferences, self-reported strengths, and approximate area. Discovery and helping remain opt-in. Revisit Learning preferences from Home or Profile. Phone a Friend ranks eligible helpers by matching topics/strengths and programme. The rule-based coach offers contextual plans and reflection prompts based on confirmed tasks, with no paid keys. See [submission handoff](docs/SUBMISSION.md) for deployment and the judging walkthrough.
+- [Product and learner flows](docs/PRODUCT.md)
+- [Codex build record](docs/BUILD_WITH_CODEX.md)
+- [Demo materials](demo-kit/README.md)
+- [API reference](docs/API.md)
+- [Privacy](docs/PRIVACY.md)
+- [Design system](docs/DESIGN.md) and [brand](docs/BRAND.md)
+- [Deployment and release checklist](docs/SUBMISSION.md)
+- [Contributing](CONTRIBUTING.md)

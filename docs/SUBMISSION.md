@@ -16,6 +16,10 @@ CampusSignal helps working university learners restart with one confirmed learni
 
 Do not enter private material into shared demo personas.
 
+## Codex attribution and build evidence
+
+The README introduces the project as built with Codex assistance and links the [Codex build record](BUILD_WITH_CODEX.md). That record connects the original brief, agent instructions, source and tests to the work observed in the development conversation. Before submitting, share the intended source revision and attach a reviewed Codex conversation link or development recording if interaction evidence is required. No public conversation link or recording is attached yet. A claim in a README, an `AGENTS.md` file or passing tests alone does not establish code authorship.
+
 ## Deploy today
 
 1. Create an empty private GitHub repository and push this project. Never include `.env`, database files, or `.next`.
@@ -38,3 +42,7 @@ Do not enter private material into shared demo personas.
 ## Validation
 
 Production build and type checking, domain/privacy/onboarding/matching tests, and the local API smoke journey are the release checks. Browser checks cover onboarding completion, PDF extraction and confirmation, themes, responsive layout, and coach preferences. Hosted two-user verification follows deployment.
+
+Repository validation on 15 October 2026: all 22 unit tests passed, TypeScript checking (including unused locals/parameters) passed, the production build passed, and `npm run format:check` passed. The API smoke journey passed against a production server bound to localhost with a separate temporary SQLite database and external providers disabled. Existing local/hosted learner data was not reset. Local links in the updated README, contributor guide, API reference and demo-kit index were also checked.
+
+These checks do not verify current hosted availability, real-inbox email delivery, or browser rendering. Complete those checks separately before submission. The [README](../README.md) contains setup, environment reference, screen-by-screen usage, troubleshooting and the repeatable demo; the [demo kit](../demo-kit/README.md) links the presentation materials.

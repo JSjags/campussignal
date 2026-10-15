@@ -1,0 +1,19 @@
+CampusSignal demo: paste each block on a single line. Text only; the instructions are in the PDF.
+
+[Amaka · Phone a Friend · What are you working on?]
+REST APIs: protecting a route with authentication
+
+[Amaka · Phone a Friend · Where did you get stuck?]
+I added auth middleware to my Express app to protect GET /api/tasks. I log in and get a token, but when I call the protected route with curl it always returns 401 Unauthorized. I've checked the token isn't expired, so I'm not sure if I'm sending the Authorization header wrong or the middleware is reading it wrong.
+
+[Tunde · chat message]
+Hi Amaka! A 401 with a valid token usually means the header format is off. It should be Authorization: Bearer YOUR_TOKEN, with the word Bearer, a space, then the token. Also check your middleware reads it like this: req.headers.authorization?.split(" ")[1]
+
+[Amaka · chat reply (optional)]
+That was it! I was missing the word Bearer. Getting a 200 now, thank you!
+
+[Module title (type before importing the PDF)]
+REST, Auth & Testing
+
+[Amaka · Show your small step]
+I built a REST endpoint in Express: GET /api/tasks returns a JSON list of tasks. I tested it with curl and got a 200 response with the expected data. I learned that res.json() sets the Content-Type header for me.

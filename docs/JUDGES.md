@@ -17,6 +17,10 @@ The core is a consent-based workflow: source outline → learner-confirmed outco
 | Accessible AI    | Deterministic extraction/scoring by default; optional OpenAI help notes |
 | Trust            | Discovery/help opt-ins, ownership checks, blocks, approximate location  |
 
+## Built with Codex: inspect the evidence
+
+The [Codex build record](BUILD_WITH_CODEX.md) links the original product brief, repository agent instructions, implementation and tests. It records the documentation/cleanup work and validation observed in this Codex conversation: 22 passing unit tests, TypeScript, formatting, production build and a local API journey against an isolated database. Earlier code authorship is not inferred from filenames or commit subjects. A direct conversation link or development recording remains to be attached for judges who need interaction evidence.
+
 ## Honest risks
 
 Rule-based scoring measures engagement, not correctness. The app needs enough opted-in learners in one neighbourhood to be useful. Public demo accounts share state. The aggregate persistence model is suitable for this small MVP, not an unbounded campus. Reports need an operator workflow before broad launch. OpenStreetMap needs network access; the nearby list still provides useful information. Twilio sandbox is optional and the inbound webhook is an authenticated acknowledgement stub, not a linked production WhatsApp account.

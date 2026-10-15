@@ -2,3 +2,5 @@ CODEX_PROMPT.md
 package-lock.json
 node_modules/
 .next/
+components/brand/paths.ts
+public/brand

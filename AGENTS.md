@@ -68,9 +68,18 @@ Strangers can sign up (or use demo login) and use map + Phone a Friend + restart
 - Demo: Amaka → coach stuck → Tunde request → switch to Tunde → accept/chat/complete → switch back to Amaka → complete → UNSTUCK stamp. Restart submission is the alternate path.
 - `npm run seed` replaces all configured data. Never use it on a live learner dataset. Use `npm test`, `npm run typecheck`, and `npm run build` for validation; keep all docs current.
 
+## Client data and navigation
+
+- **Persistent shell:** the shell (sidebar, top bar, theme controls, mobile nav) lives in the root layout via `components/app-shell.tsx`. `app/[[...screen]]/page.tsx` renders only the screen (`components/campus-app.tsx`). Never key the shell or `<main>` by path, and never use `window.location` for internal routes.
+- **Session:** `components/data/client.tsx` loads the session once, then reloads it only after sign-in or persona switch (`refresh`). Profile and onboarding saves use `setUser`; sign-out uses `signOut`; any API 401 expires it.
+- **Cache:** screen data uses `useResource(key)` backed by `lib/resource-store.ts`, one store per signed-in user. A new user id disposes the store, so cached content cannot cross accounts. It works stale-while-revalidate, discards older responses, and dedupes requests.
+- **Polling:** use `useResource(key, { poll })`. Polls never overlap, stop on unmount and pause in hidden tabs.
+- **Mutations:** use `useAction()` for local busy and error state. Afterwards, apply the server response with `store.set` and `store.invalidate([...])` only the affected keys. There is no global refresh counter.
+- **Chat histories:** use `useChatScroll`. It follows new messages only after sending or when already near the bottom; otherwise it shows "New messages". Clear an input only if it still holds the text that was sent.
+
 ## UI design
 
-Follow `docs/DESIGN.md` and `.agents/skills/campussignal-design/SKILL.md` for UI changes. Use semantic tokens from `app/theme.css`, preserve all three appearance modes, and respect reduced motion. Lenis is limited to the landing page. Consult the project Motion skill when changing animations.
+Follow `docs/DESIGN.md` and `.agents/skills/campussignal-design/SKILL.md` for UI changes. The visual system is rounded neubrutalism: semantic tokens in `app/theme.css` (shared primitives) and screen layouts in `app/globals.css`, with no raw colours in components. Preserve all three appearance modes and respect reduced motion. One route-aware Lenis controller (`components/design/smooth-scroll.tsx`) smooths `/`, `/onboarding`, `/home`, `/outline`, `/stamps` and `/profile`; coach, help chat, map, Phone a Friend and task routes stay native. Consult the project Motion skill when changing animations. Brand identity ("The Opening" symbol, custom CampusSignal wordmark, favicons) is documented in `docs/BRAND.md`; render it with `components/brand/logo.tsx`, never as typed text.
 
 ## Submission features
 

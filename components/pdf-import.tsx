@@ -1,10 +1,12 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
+import { useId, useRef, useState, useEffect } from "react";
+import { AlertCircle, CheckCircle2, FileText, Loader2 } from "lucide-react";
 export default function PdfImport({
   onText,
 }: {
   onText: (text: string, title: string) => void;
 }) {
+  const inputId = useId();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -100,29 +102,47 @@ export default function PdfImport({
     }
   }
   return (
-    <div className="pdf-import">
-      <label>
-        Or import a module PDF
-        <input
-          type="file"
-          accept="application/pdf,.pdf"
-          disabled={busy}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void read(file);
-            e.target.value = "";
-          }}
-        />
-      </label>
-      <small>
-        Up to 5 MB / 40 pages. Read locally in your browser. Only the text you
-        submit is stored; the PDF is never uploaded.
-      </small>
-      {busy && <p role="status">Reading PDF text…</p>}
-      {notice && <p role="status">{notice}</p>}
+    <div className="pdf-import" aria-busy={busy}>
+      <div className="pdf-import-head">
+        <span className="tile is-accent" aria-hidden="true">
+          <FileText size={20} />
+        </span>
+        <label htmlFor={inputId}>
+          Or import a module PDF
+          <span className="hint">
+            Up to 5 MB / 40 pages. Read in your browser — the PDF is never
+            uploaded, only the text you submit is stored.
+          </span>
+        </label>
+      </div>
+      <input
+        id={inputId}
+        className="file-input"
+        type="file"
+        accept="application/pdf,.pdf"
+        disabled={busy}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void read(file);
+          e.target.value = "";
+        }}
+      />
+      {busy && (
+        <p role="status" className="alert is-info">
+          <Loader2 size={18} className="spin" aria-hidden="true" />
+          <span>Reading PDF text…</span>
+        </p>
+      )}
+      {notice && (
+        <p role="status" className="alert is-success">
+          <CheckCircle2 size={18} aria-hidden="true" />
+          <span>{notice}</span>
+        </p>
+      )}
       {error && (
         <p role="alert" className="alert">
-          {error}
+          <AlertCircle size={18} aria-hidden="true" />
+          <span>{error}</span>
         </p>
       )}
     </div>

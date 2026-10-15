@@ -1,0 +1,14 @@
+{
+  "name": "CampusSignal",
+  "short_name": "CampusSignal",
+  "description": "A little momentum. A nearby friend. A way forward for working university learners.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#fbf6ea",
+  "theme_color": "#fbf6ea",
+  "icons": [
+    { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/brand/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

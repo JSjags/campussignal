@@ -11,6 +11,7 @@ All routes are in the Next.js App Router under `/api`. JSON mutations are Zod-va
 | GET       | /auth/session               | `{user}` or 401                                                                              |
 | GET       | /home                       | User, computed stall, current task, stamps, own requests, visible peers                      |
 | GET/PATCH | /profile                    | Read/update name, programme, topics, nearby, helper, lat, lng                                |
+| POST      | /onboarding                 | Validated learning preferences, approximate area and opt-ins; saves setup completion         |
 | GET/POST  | /outlines                   | Own outlines / create from `{title,text}`; returns extracted source lines                    |
 | POST      | /outlines/:id/confirm       | `{outcomes:["Build a REST endpoint"]}`; creates task, idempotent once confirmed              |
 | GET       | /tasks/:id                  | Own task, rubric, own submissions                                                            |

@@ -1,6 +1,14 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MapPin, User } from "@/lib/domain";
+type Leaflet = typeof import("leaflet");
+type Tone = "you" | "peer" | "desk";
+
+/*
+ * The Leaflet map is created once per approximate centre. Refetched peer and
+ * pin data only redraws the marker layer when it actually changed, so the
+ * map, tiles, pan and zoom are not torn down by background updates.
+ */
 export default function NearbyMap({
   center,
   peers,
@@ -11,6 +19,10 @@ export default function NearbyMap({
   pins: MapPin[];
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const leaflet = useRef<{ L: Leaflet; layer: import("leaflet").LayerGroup }>(
+    null,
+  );
+  const [ready, setReady] = useState(0);
   useEffect(() => {
     let disposed = false;
     let map: import("leaflet").Map | undefined;
@@ -25,47 +37,79 @@ export default function NearbyMap({
           '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 18,
       }).addTo(map);
+      // Colours come from theme tokens via CSS classes, so markers follow
+      // light/dark without re-rendering the map.
       L.circle([center.lat, center.lng], {
         radius: 1600,
-        color: "#397565",
-        fillOpacity: 0.05,
-        weight: 1,
-        dashArray: "5 8",
+        className: "map-radius",
+        weight: 2,
+        dashArray: "6 8",
       }).addTo(map);
-      const icon = (label: string, desk = false) =>
-        L.divIcon({
-          className: "custom-pin",
-          html: `<span class="pin ${desk ? "desk-pin" : ""}">${label}</span>`,
-          iconSize: [44, 44],
-          iconAnchor: [22, 44],
-        });
-      L.marker([center.lat, center.lng], { icon: icon("●") })
-        .addTo(map)
-        .bindPopup("Your approximate area");
-      for (const p of peers) {
-        const popup = document.createElement("span");
-        popup.textContent = `${p.name} · approximate location`;
-        L.marker([p.lat, p.lng], {
-          icon: icon(p.name.slice(0, 1).replace(/[^a-zA-Z]/g, "?")),
-        })
-          .addTo(map)
-          .bindPopup(popup);
-      }
-      for (const p of pins) {
-        const popup = document.createElement("span");
-        popup.textContent = p.title;
-        L.marker([p.lat + 0.0008, p.lng], {
-          icon: icon(p.kind === "desk" ? "▤" : "♧", true),
-        })
-          .addTo(map)
-          .bindPopup(popup);
-      }
+      addMarker(
+        L,
+        map,
+        center.lat,
+        center.lng,
+        "YOU",
+        "you",
+        "You",
+        "Your approximate area",
+      );
+      leaflet.current = { L, layer: L.layerGroup().addTo(map) };
+      setReady((n) => n + 1);
     });
     return () => {
       disposed = true;
+      leaflet.current = null;
       map?.remove();
     };
-  }, [center.lat, center.lng, peers, pins]);
+  }, [center.lat, center.lng]);
+  // A content signature: identical refetches do not touch the markers.
+  const signature = useMemo(
+    () =>
+      JSON.stringify([
+        peers.map((p) => [p.id, p.name, p.lat, p.lng]),
+        pins.map((p) => [p.id, p.kind, p.title, p.lat, p.lng]),
+      ]),
+    [peers, pins],
+  );
+  useEffect(() => {
+    const current = leaflet.current;
+    if (!current) return;
+    const { L, layer } = current;
+    layer.clearLayers();
+    const [peerRows, pinRows] = JSON.parse(signature) as [
+      [string, string, number, number][],
+      [string, MapPin["kind"], string, number, number][],
+    ];
+    for (const [, name, lat, lng] of peerRows) {
+      const initial = name.slice(0, 1).replace(/[^a-zA-Z]/g, "?");
+      addMarker(
+        L,
+        layer,
+        lat,
+        lng,
+        initial.toUpperCase(),
+        "peer",
+        name,
+        "Approximate location",
+      );
+    }
+    for (const [, kind, title, lat, lng] of pinRows) {
+      addMarker(
+        L,
+        layer,
+        lat + 0.0008,
+        lng,
+        kind === "desk" ? "DSK" : "BUD",
+        "desk",
+        title,
+        kind === "desk"
+          ? "Study desk · community shared"
+          : "Buddy spot · community shared",
+      );
+    }
+  }, [ready, signature]);
   return (
     <div
       className="leaflet-map"
@@ -73,4 +117,38 @@ export default function NearbyMap({
       aria-label="Map of approximate nearby learner and study desk locations"
     />
   );
+}
+
+function addMarker(
+  L: Leaflet,
+  target: import("leaflet").Map | import("leaflet").LayerGroup,
+  lat: number,
+  lng: number,
+  label: string,
+  tone: Tone,
+  title: string,
+  detail: string,
+) {
+  const node = document.createElement("div");
+  node.className = "map-popup";
+  const strong = document.createElement("strong");
+  strong.textContent = title;
+  const small = document.createElement("small");
+  small.textContent = detail;
+  node.append(strong, small);
+  L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: "custom-pin",
+      html: `<span class="pin pin-${tone}"><span>${label}</span></span>`,
+      iconSize: [40, 48],
+      iconAnchor: [20, 46],
+      popupAnchor: [0, -42],
+    }),
+    title: `${title} · ${detail}`,
+    alt: `${title} · ${detail}`,
+    keyboard: true,
+    riseOnHover: true,
+  })
+    .addTo(target)
+    .bindPopup(node);
 }

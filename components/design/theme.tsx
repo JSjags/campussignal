@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { MotionConfig } from "motion/react";
+import { SmoothScroll } from "./smooth-scroll";
 type Theme = "light" | "dark" | "system";
 const ThemeContext = createContext<{
   theme: Theme;
@@ -42,8 +43,9 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <MotionConfig
         reducedMotion="user"
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
       >
+        <SmoothScroll />
         {children}
       </MotionConfig>
     </ThemeContext.Provider>
@@ -64,10 +66,10 @@ export function ThemeSwitch() {
           key={value}
           aria-label={`${value[0].toUpperCase() + value.slice(1)} theme`}
           aria-pressed={theme === value}
-          title={`${value} theme`}
+          title={`${value[0].toUpperCase() + value.slice(1)} theme`}
           onClick={() => setTheme(value)}
         >
-          <Icon size={15} />
+          <Icon size={16} aria-hidden="true" />
         </button>
       ))}
     </div>

@@ -1,4 +1,4 @@
-import CampusApp from "@/components/campus-app";
+import CampusScreen from "@/components/campus-app";
 import { notFound } from "next/navigation";
 export default async function Page({
   params,
@@ -27,5 +27,6 @@ export default async function Page({
     (!["help", "task"].includes(page) && record)
   )
     notFound();
-  return <CampusApp />;
+  // Only the screen content lives here; the shell is in the root layout.
+  return <CampusScreen />;
 }
